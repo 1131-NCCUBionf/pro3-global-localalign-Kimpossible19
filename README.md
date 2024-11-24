@@ -171,6 +171,7 @@ The correct answer gets 10 points for each testing data.
 * ChatGPT, respond to my prompt, on November 24, 2024.
 * Conversation link: https://chatgpt.com/share/6742d5b3-08b8-8013-81e8-bcb902b897bd
 * https://stackoverflow.com/questions/36596389/sequence-alignment-algorithm-with-a-group-of-characters-instead-of-one-character
+* https://github.com/biopython/biopython/issues/955
 
 
 
