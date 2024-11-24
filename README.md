@@ -10,6 +10,7 @@ Khoo Kim Jun 110304027
 * Packages you can use: numpy, pandas, Bio
 * You should write a program with a function named alignment, ie.
 ```
+
 def alignment(input_path, score_path, output_path, aln, gap):
     import pandas as pd
     import numpy as np
@@ -38,6 +39,10 @@ def alignment(input_path, score_path, output_path, aln, gap):
         for j in range(m):
             dp[0][j] = j * gap
 
+    if aln == "local":
+        dp[0, :] = 0
+        dp[:, 0] = 0
+    
     max_score = 0
     max_positions = []
 
@@ -65,32 +70,35 @@ def alignment(input_path, score_path, output_path, aln, gap):
         while i > 0 and j > 0:
             current_score = dp[i][j]
             if aln == "local" and current_score == 0:
+
+                # Include the next character from both sequences, if valid
+                if i > 0 and j > 0:
+                    aligned_seq1.append(seq1[i - 1])
+                    aligned_seq2.append(seq2[j - 1])
                 break
-            if current_score == dp[i - 1][j - 1] + score_matrix_df.loc[seq1[i - 1], seq2[j - 1]]:
+                
+            if  current_score == dp[i - 1][j - 1] + score_matrix_df.loc[seq1[i - 1], seq2[j - 1]]:
                 aligned_seq1.append(seq1[i - 1])
                 aligned_seq2.append(seq2[j - 1])
                 i -= 1
                 j -= 1
+                
             elif current_score == dp[i - 1][j] + gap:
                 aligned_seq1.append(seq1[i - 1])
                 aligned_seq2.append("-")
                 i -= 1
-            else:
+                
+            elif current_score == dp[i][j - 1] + gap:
                 aligned_seq1.append("-")
                 aligned_seq2.append(seq2[j - 1])
                 j -= 1
 
-        # Handle remaining characters for global alignment
-        if aln == "global":
-            while i > 0:
-                aligned_seq1.append(seq1[i - 1])
-                aligned_seq2.append("-")
-                i -= 1
-            while j > 0:
-                aligned_seq1.append("-")
-                aligned_seq2.append(seq2[j - 1])
-                j -= 1
+         # Include the last valid character if the traceback stopped prematurely
+        if aln == "local" and dp[i][j] > 0:
+            aligned_seq1.append(seq1[i - 1])
+            aligned_seq2.append(seq2[j - 1])
 
+        
         aligned_seq1 = ''.join(reversed(aligned_seq1))
         aligned_seq2 = ''.join(reversed(aligned_seq2))
         return aligned_seq1, aligned_seq2
@@ -99,10 +107,8 @@ def alignment(input_path, score_path, output_path, aln, gap):
     if aln == "global":
         alignments.append(trace_back(n - 1, m - 1))
     elif aln == "local":
-        if not max_positions:
-            raise ValueError("No valid local alignments found.")
-        for pos in max_positions:
-            alignments.append(trace_back(*pos))
+        for i, j in max_positions:
+            alignments.append(trace_back(i, j))
 
     # Write output to file
     with open(output_path, "w") as f:
@@ -170,6 +176,7 @@ The correct answer gets 10 points for each testing data.
 ## References
 * ChatGPT, respond to my prompt, on November 24, 2024.
 * Conversation link: https://chatgpt.com/share/6742d5b3-08b8-8013-81e8-bcb902b897bd
+* Below are some websites that I have copied the code and feed the GPT:
 * https://stackoverflow.com/questions/36596389/sequence-alignment-algorithm-with-a-group-of-characters-instead-of-one-character
 * https://github.com/biopython/biopython/issues/955
 
